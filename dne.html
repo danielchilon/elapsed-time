@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>dne</title>
+<style>
+  :root {
+    --bg-1: #23272e;
+    --bg-2: #14161a;
+    --glass: rgba(220, 226, 234, 0.07);
+    --glass-edge: rgba(220, 226, 234, 0.28);
+    --metal-1: #8c93a0;
+    --metal-2: #4a505b;
+    --sand-1: #e6d3a6;
+    --sand-2: #b39663;
+    color-scheme: black;
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; }
+  body {
+    min-height: 100dvh;
+    display: grid;
+    place-items: center;
+    background: radial-gradient(ellipse at 50% 35%, var(--bg-1) 0%, var(--bg-2) 70%);
+    padding: max(24px, env(safe-area-inset-top)) 24px max(24px, env(safe-area-inset-bottom));
+  }
+  #reloj {
+    width: min(240px, 60vw);
+    height: auto;
+    display: block;
+    cursor: pointer;
+    transform-origin: 50% 50%;
+    filter: drop-shadow(0 24px 30px rgba(0, 0, 0, 0.45));
+    -webkit-tap-highlight-color: transparent;
+    outline: none;
+  }
+  #reloj:focus-visible { filter: drop-shadow(0 0 0 transparent); }
+  #reloj:focus-visible .marco { stroke: var(--sand-1); }
+  #reloj.sacudir { animation: sacudir 0.8s ease-in-out; }
+  @keyframes sacudir {
+    0%   { transform: rotate(0deg); }
+    20%  { transform: rotate(-3deg); }
+    45%  { transform: rotate(2.5deg); }
+    70%  { transform: rotate(-1deg); }
+    100% { transform: rotate(0deg); }
+  }
+  .grano { fill: url(#gradiente-arena); }
+  @media (prefers-reduced-motion: reduce) {
+    #reloj.sacudir { animation: none; }
+  }
+</style>
+</head>
+<body>
+
+<svg id="reloj" viewBox="0 0 200 400" role="button" tabindex="0" aria-label="Reloj de arena">
+  <defs>
+    <linearGradient id="gradiente-metal" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#5a616d"/>
+      <stop offset="0.45" stop-color="#a7aeba"/>
+      <stop offset="0.6" stop-color="#8c93a0"/>
+      <stop offset="1" stop-color="#3f444e"/>
+    </linearGradient>
+    <linearGradient id="gradiente-arena" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#e6d3a6"/>
+      <stop offset="1" stop-color="#b39663"/>
+    </linearGradient>
+    <linearGradient id="gradiente-vidrio" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="rgba(220,226,234,0.02)"/>
+      <stop offset="0.3" stop-color="rgba(220,226,234,0.14)"/>
+      <stop offset="0.5" stop-color="rgba(220,226,234,0.04)"/>
+      <stop offset="0.85" stop-color="rgba(220,226,234,0.10)"/>
+      <stop offset="1" stop-color="rgba(220,226,234,0.02)"/>
+    </linearGradient>
+    <clipPath id="interior-inferior">
+      <path d="M100 200 C108 226 144 270 144 330 H56 C56 270 92 226 100 200 Z"/>
+    </clipPath>
+  </defs>
+
+  <!-- Vidrio -->
+  <g class="marco-vidrio">
+    <path d="M58 66 H142 C142 128 108 174 100 200 C92 174 58 128 58 66 Z"
+          fill="url(#gradiente-vidrio)" stroke="var(--glass-edge)" stroke-width="1.2" stroke-linejoin="round"/>
+    <path d="M100 200 C108 226 144 270 144 330 H56 C56 270 92 226 100 200 Z"
+          fill="url(#gradiente-vidrio)" stroke="var(--glass-edge)" stroke-width="1.2" stroke-linejoin="round"/>
+  </g>
+
+  <!-- Arena: toda en la parte inferior -->
+  <g clip-path="url(#interior-inferior)">
+    <path d="M50 340 L150 340 L150 316 C128 300 118 296 100 296 C82 296 72 300 50 316 Z"
+          fill="url(#gradiente-arena)"/>
+  </g>
+
+  <!-- Estrechamiento del cuello -->
+  <circle cx="100" cy="200" r="1.4" fill="#b39663"/>
+
+  <!-- Soportes laterales -->
+  <path d="M54 66 V334" stroke="url(#gradiente-metal)" stroke-width="2.4" stroke-linecap="round" fill="none"/>
+  <path d="M146 66 V334" stroke="url(#gradiente-metal)" stroke-width="2.4" stroke-linecap="round" fill="none"/>
+
+  <!-- Placas superior e inferior -->
+  <rect x="36" y="34" width="128" height="30" rx="4" fill="url(#gradiente-metal)"/>
+  <rect x="36" y="336" width="128" height="30" rx="4" fill="url(#gradiente-metal)"/>
+  <rect class="marco" x="36" y="34" width="128" height="30" rx="4" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="0.8"/>
+  <rect class="marco" x="36" y="336" width="128" height="30" rx="4" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="0.8"/>
+
+  <g id="granos"></g>
+</svg>
+
+<script>
+  const reloj = document.getElementById("reloj");
+  const granos = document.getElementById("granos");
+  const NS = "http://www.w3.org/2000/svg";
+
+  function caerGranos() {
+    const cantidad = 6;
+    for (let i = 0; i < cantidad; i++) {
+      const c = document.createElementNS(NS, "circle");
+      c.setAttribute("r", (1.1 + Math.random() * 0.7).toFixed(2));
+      c.setAttribute("cx", (100 + (Math.random() - 0.5) * 3).toFixed(2));
+      c.setAttribute("cy", "200");
+      c.setAttribute("class", "grano");
+      granos.appendChild(c);
+
+      const destino = 92 + Math.random() * 6;
+      c.animate(
+        [
+          { transform: "translateY(0px)", opacity: 1 },
+          { transform: `translateY(${destino}px)`, opacity: 0.85 }
+        ],
+        {
+          duration: 480 + Math.random() * 420,
+          delay: i * 110,
+          easing: "ease-in",
+          fill: "forwards"
+        }
+      );
+    }
+  }
+
+  function sacudir() {
+    reloj.classList.remove("sacudir");
+    void reloj.getBoundingClientRect();
+    reloj.classList.add("sacudir");
+    caerGranos();
+  }
+
+  reloj.addEventListener("click", sacudir);
+  reloj.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      sacudir();
+    }
+  });
+</script>
+</body>
+</html>
